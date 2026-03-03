@@ -2,74 +2,77 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>スパルタ数学認証</title>
+    <title>スパルタ数学認証 v2.0</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; text-align: center; padding: 50px; background: #1a1a1a; color: #eee; }
-        .screen { border: 2px solid #555; padding: 30px; width: 400px; margin: auto; border-radius: 10px; background: #222; }
+        body { font-family: 'Courier New', Courier, monospace; text-align: center; padding: 20px; background: #000; color: #0f0; }
+        .screen { border: 2px solid #0f0; padding: 20px; width: 400px; margin: 50px auto; border-radius: 5px; background: #111; }
         .hidden { display: none; }
-        #timer { font-size: 3em; color: #ff4444; font-weight: bold; margin: 20px 0; }
-        input { padding: 10px; font-size: 1.2em; width: 80%; }
-        button { padding: 10px 20px; font-size: 1.2em; cursor: pointer; margin-top: 10px; }
+        #timer { font-size: 3em; color: #ff0000; margin: 10px 0; font-weight: bold; }
+        input { padding: 8px; font-size: 1.2em; width: 80%; background: #000; color: #0f0; border: 1px solid #0f0; }
+        button { padding: 10px 20px; font-size: 1.2em; cursor: pointer; margin-top: 10px; background: #0f0; color: #000; border: none; }
+        footer { margin-top: 100px; color: #555; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="screen">
-        <h2>System Login</h2>
-        <input type="password" id="pass-input" placeholder="パスワードを入力">
+        <h2>SYSTEM ACCESS</h2>
+        <input type="password" id="pass-input" placeholder="Password">
         <br>
-        <button onclick="startChallenge()">認証へ進む</button>
+        <button onclick="startChallenge()">ENTER</button>
     </div>
 
     <div id="challenge-screen" class="screen hidden">
-        <h2>Identity Verification</h2>
-        <p>以下の数式を解け (小数点以下は切り捨て)</p>
-        <div id="equation" style="font-size: 1.8em; margin: 20px;"></div>
+        <h2>VERIFICATION REQUIRED</h2>
+        <p>Solve this within 30 seconds:</p>
+        <div id="equation" style="font-size: 1.5em; margin: 20px; color: #fff;"></div>
         <div id="timer">30.0</div>
-        <input type="number" id="answer" placeholder="答えを入力">
-        <button onclick="checkAnswer()">回答送信</button>
+        <input type="number" id="answer" placeholder="Answer">
+        <button onclick="checkAnswer()">SUBMIT</button>
     </div>
 
     <div id="success-screen" class="screen hidden">
-        <h1 style="color: #44ff44;">ACCESS GRANTED</h1>
-        <p>おめでとう！認証に成功しました。</p>
-        <button onclick="location.reload()">再ログイン</button>
+        <h1 style="color: #0f0;">SUCCESS</h1>
+        <p>Welcome to the system.</p>
+        <button onclick="location.reload()">Reset</button>
     </div>
+
+    <footer>
+        <p>Hint: Password is "secret123"</p>
+    </footer>
 
     <script>
         let timerId;
         let timeLeft = 30.0;
         let correctAnswer;
 
-        // 数学問題のリスト (ルートや積分)
+        // 難しい問題リスト (q=問題文, a=答え)
         const problems = [
-            { q: "√144 + √81", a: 21 },
+            { q: "√144 + (10 / 2)", a: 17 },
             { q: "∫(0 to 2) 3x^2 dx", a: 8 },
-            { q: "√(25) * 4", a: 20 }
+            { q: "(√81 / 3) + 7", a: 10 },
+            { q: "100 / 4 + √16", a: 29 }
         ];
 
         function startChallenge() {
-            // パスワード確認（簡易的なもの）
-            if(document.getElementById('pass-input').value !== "admin") {
-                alert("パスワードが違います");
+            if(document.getElementById('pass-input').value !== "secret123") {
+                alert("Wrong Password!");
                 return;
             }
 
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('challenge-screen').classList.remove('hidden');
 
-            // 問題選択
             const prob = problems[Math.floor(Math.random() * problems.length)];
             document.getElementById('equation').innerText = prob.q;
             correctAnswer = prob.a;
 
-            // 1/10秒単位のタイマー開始
             timerId = setInterval(() => {
                 timeLeft -= 0.1;
                 document.getElementById('timer').innerText = timeLeft.toFixed(1);
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
-                    alert("Time Over! 認証失敗");
+                    alert("Time Limit Exceeded.");
                     location.reload();
                 }
             }, 100);
@@ -82,7 +85,7 @@
                 document.getElementById('challenge-screen').classList.add('hidden');
                 document.getElementById('success-screen').classList.remove('hidden');
             } else {
-                alert("不正解！");
+                alert("Incorrect Answer.");
                 location.reload();
             }
         }
