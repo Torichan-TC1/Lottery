@@ -1,60 +1,70 @@
-<div id="authGate" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); color:white; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
-    <h2>社員認証：人間であることを証明せよ</h2>
-    <p>以下の式を解け：</p>
-    <div id="mathProblem" style="font-size: 2.5em; margin: 20px; color: gold;"></div>
-    <input type="number" id="mathAnswer" placeholder="答えを入力...">
-    <div id="timerDisplay" style="margin: 20px; font-size: 2em; color: red;">30</div>
-    <button onclick="checkMath()">送信</button>
-</div>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>スパルタ認証システム</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        #quiz-box { border: 2px solid #333; padding: 20px; width: 300px; margin: auto; }
+        #timer { font-size: 2em; color: red; font-weight: bold; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
 
-<script>
-    let correctAnswer;
-    let timerInterval;
+    <div id="login-screen">
+        <h2>GitHub ログイン</h2>
+        <input type="password" placeholder="パスワードを入力">
+        <button onclick="startChallenge()">ログイン</button>
+    </div>
 
-    function startAuth() {
-        document.getElementById('authGate').style.display = 'flex';
-        const type = Math.floor(Math.random() * 3); // 3パターンからランダム
+    <div id="challenge-screen" class="hidden">
+        <h2>認証：ロボットではないことを証明せよ</h2>
+        <p>以下の計算を30秒以内に解け：</p>
+        <div id="equation" style="font-size: 1.5em; margin: 10px;"></div>
+        <div id="timer">30</div>
+        <input type="number" id="answer" placeholder="答えを入力">
+        <button onclick="checkAnswer()">送信</button>
+    </div>
 
-        if (type === 0) { // 積分パターン: \int_0^a x dx = a^2 / 2
-            const a = Math.floor(Math.random() * 8) + 2;
-            correctAnswer = (a * a) / 2;
-            document.getElementById('mathProblem').innerText = `∫[0, ${a}] x dx = ?`;
-        } else if (type === 1) { // ルート・分数パターン: \frac{\sqrt{x}}{a} = b
-            const a = Math.floor(Math.random() * 5) + 2;
-            const b = Math.floor(Math.random() * 5) + 2;
-            correctAnswer = (a * b) ** 2;
-            document.getElementById('mathProblem').innerText = `√x / ${a} = ${b}`;
-        } else { // 代数パターン: a * x + b = c
-            const a = Math.floor(Math.random() * 10) + 1;
-            const b = Math.floor(Math.random() * 20) + 1;
-            const x = Math.floor(Math.random() * 10) + 1;
-            correctAnswer = x;
-            document.getElementById('mathProblem').innerText = `${a}x + ${b} = ${a*x + b}`;
-        }
-
+    <script>
+        let countdown;
+        let correctAnswer;
         let timeLeft = 30;
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById('timerDisplay').innerText = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                alert("認証失敗。君のような未熟者にこの部署は早い。");
-                location.reload(); 
-            }
-        }, 1000);
-    }
 
-    function checkMath() {
-        const userAnswer = document.getElementById('mathAnswer').value;
-        if (parseInt(userAnswer) === correctAnswer) {
-            clearInterval(timerInterval);
-            document.getElementById('authGate').style.display = 'none';
-            alert("……合格。さあ、仕事を始めろ。");
-        } else {
-            alert("計算ミス？そんなことで我が社が務まると思っているのか？");
+        function startChallenge() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('challenge-screen').classList.remove('hidden');
+            
+            // 超難しい（？）計算式を生成
+            const a = Math.floor(Math.random() * 90) + 10;
+            const b = Math.floor(Math.random() * 90) + 10;
+            const c = Math.floor(Math.random() * 10) + 1;
+            correctAnswer = (a * b) + c;
+            document.getElementById('equation').innerText = `${a} × ${b} + ${c} = ?`;
+
+            // タイマー開始
+            countdown = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    alert("時間切れ！認証されませんでした。");
+                    location.reload(); // ページをリロードして最初から
+                }
+            }, 1000);
         }
-    }
 
-    // 最初に呼び出す
-    window.onload = startAuth;
-</script>
+        function checkAnswer() {
+            const userAnswer = document.getElementById('answer').value;
+            clearInterval(countdown);
+            if (parseInt(userAnswer) === correctAnswer) {
+                alert("おめでとう！認証成功です。");
+            } else {
+                alert("不正解です。ログインに戻ります。");
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
