@@ -2,10 +2,10 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>スパルタ数学認証 v3.0</title>
+    <title>スパルタ数学認証 v4.0</title>
     <style>
         body { font-family: 'Courier New', Courier, monospace; text-align: center; padding: 20px; background: #000; color: #0f0; }
-        .screen { border: 2px solid #0f0; padding: 20px; width: 400px; margin: 30px auto; border-radius: 5px; background: #111; }
+        .screen { border: 2px solid #0f0; padding: 20px; width: 450px; margin: 30px auto; border-radius: 5px; background: #111; }
         .hidden { display: none; }
         .visitor-counter { font-size: 0.9em; color: #555; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         #timer { font-size: 3em; color: #ff0000; margin: 10px 0; font-weight: bold; }
@@ -27,7 +27,7 @@
     <div id="challenge-screen" class="screen hidden">
         <h2>VERIFICATION REQUIRED</h2>
         <p>Solve this within 30 seconds:</p>
-        <div id="equation" style="font-size: 1.5em; margin: 20px; color: #fff;"></div>
+        <div id="equation" style="font-size: 1.3em; margin: 20px; color: #fff;"></div>
         <div id="timer">30.0</div>
         <input type="number" id="answer" placeholder="Answer">
         <button onclick="checkAnswer()">SUBMIT</button>
@@ -44,19 +44,20 @@
     </footer>
 
     <script>
-        // 来場者数のシミュレーション
         document.getElementById('count').innerText = Math.floor(Math.random() * 5000) + 120;
 
         let timerId;
         let timeLeft = 30.0;
         let correctAnswer;
 
-        // 分数や積分を含む難問リスト
+        // 問題のバリエーションを拡大
         const problems = [
-            { q: "(1/2) * 50 + 10", a: 35 },
-            { q: "∫(0 to 2) 2x dx", a: 4 },
-            { q: "(1/4) * 100 - √9", a: 22 },
-            { q: "√169 + (1/3) * 30", a: 23 }
+            { q: "(12 * 12) / 3 + √64", a: 56 },
+            { q: "∫(0 to 3) 2x dx", a: 9 },
+            { q: "sin(90°) * 50 + (100 / 2)", a: 100 },
+            { q: "(√100 + 5^2) * 2 / 10", a: 7 },
+            { q: "3! + 4^2 - 10", a: 12 },
+            { q: "log2(8) * 10 + 5", a: 35 }
         ];
 
         function startChallenge() {
