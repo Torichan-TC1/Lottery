@@ -2,58 +2,85 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <title>理不尽AI上司LINE</title>
     <style>
-        body { margin: 0; background-color: #8ea3c4; font-family: sans-serif; display: flex; justify-content: center; height: 100vh; }
-        #chat-window { width: 100%; max-width: 400px; background: #8ea3c4; display: flex; flex-direction: column; height: 100%; }
-        #messages { flex: 1; overflow-y: scroll; padding: 20px; }
-        
-        /* メッセージ配置 */
+        body { margin: 0; background-color: #8ea3c4; font-family: sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        #chat-window { width: 100%; max-width: 400px; background: #8ea3c4; display: flex; flex-direction: column; height: 100vh; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; }
         .message { display: flex; margin-bottom: 15px; }
         .message.me { justify-content: flex-end; }
-        
-        /* フキダシ */
-        .bubble { padding: 10px 15px; border-radius: 18px; position: relative; max-width: 70%; word-wrap: break-word; }
+        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 70%; word-wrap: break-word; position: relative; }
         .boss { background: white; color: black; border-top-left-radius: 2px; }
         .me { background: #95ec69; color: black; border-top-right-radius: 2px; }
-        
-        /* 入力欄 */
         #footer { background: white; padding: 10px; display: flex; }
         input { flex: 1; border: none; padding: 10px; outline: none; }
-        button { background: #95ec69; border: none; border-radius: 5px; padding: 0 15px; }
+        button { background: #95ec69; border: none; border-radius: 5px; padding: 0 15px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="chat-window">
         <div id="messages"></div>
         <div id="footer">
-            <input type="text" id="input" placeholder="メッセージを入力">
+            <input type="text" id="input" placeholder="メッセージを入力...">
             <button onclick="send()">送信</button>
         </div>
     </div>
 
     <script>
-        const messages = document.getElementById('messages');
-        const input = document.getElementById('input');
+        // --- 感情エンジン ---
+        const moods = ["normal", "busy", "angry"];
+        let currentMood = "normal";
 
+        const responses = {
+            report: {
+                normal: ["ふーん、それで？", "了解。で、次のタスクは？", "まあ、最低限はクリアだね。"],
+                busy: ["報告はメールでいいよ。今忙しい。", "あ、今立て込んでるから後で。", "…で、結論だけ言える？"],
+                angry: ["やっと終わったの？遅いよ。", "こんなものか。期待してたんだけど。", "質が低いね。やり直し。"]
+            },
+            excuse: {
+                normal: ["理由はいいから、どうするか言って。", "それが君の限界？", "言い訳を探す暇があるなら手を動かして。"],
+                busy: ["忙しいんだよね今。またにして。", "それは僕の仕事じゃないよ。", "後回しでいいや。"],
+                angry: ["だから何？", "言い訳を聞くために雇ったんじゃない。", "…もう帰っていいよ。"]
+            },
+            question: {
+                normal: ["自分で考えてみて。", "ググれば一発じゃない？", "それ、聞く前に調べた？"],
+                busy: ["今、会議中なんだけど。", "後にしてくれる？", "…メールで詳細送っといて。"],
+                angry: ["そんなことも分からないの？", "やる気ある？", "少しは自分で工夫しなよ。"]
+            }
+        };
+
+        function getReply(text) {
+            // 気分をランダム変更
+            if (Math.random() < 0.3) currentMood = moods[Math.floor(Math.random() * moods.length)];
+            
+            // 意図判定
+            let intent = "report";
+            if (text.includes("すいません") || text.includes("無理")) intent = "excuse";
+            else if (text.includes("どう") || text.includes("教えて") || text.includes("？")) intent = "question";
+
+            const pool = responses[intent][currentMood];
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // --- UI操作 ---
         function addMessage(text, isMe) {
             const div = document.createElement('div');
             div.className = isMe ? 'message me' : 'message';
             div.innerHTML = `<div class="bubble ${isMe ? 'me' : 'boss'}">${text}</div>`;
-            messages.appendChild(div);
-            messages.scrollTop = messages.scrollHeight;
+            document.getElementById('messages').appendChild(div);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         }
 
         function send() {
+            const input = document.getElementById('input');
             if (!input.value) return;
             addMessage(input.value, true);
             const userText = input.value;
             input.value = '';
 
-            // AI上司の返信
+            // AIの思考遅延（1秒）
             setTimeout(() => {
-                let reply = "…で、結論は？";
-                if (userText.includes("進捗")) reply = "進捗？それが今の君の精一杯？";
-                if (userText.includes("お疲れ")) reply = "お疲れ様。で、例の資料は？";
+                const reply = getReply(userText);
                 addMessage(reply, false);
             }, 1000);
         }
