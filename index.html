@@ -2,20 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>スパルタ数学認証 v2.0</title>
+    <title>スパルタ数学認証 v3.0</title>
     <style>
         body { font-family: 'Courier New', Courier, monospace; text-align: center; padding: 20px; background: #000; color: #0f0; }
-        .screen { border: 2px solid #0f0; padding: 20px; width: 400px; margin: 50px auto; border-radius: 5px; background: #111; }
+        .screen { border: 2px solid #0f0; padding: 20px; width: 400px; margin: 30px auto; border-radius: 5px; background: #111; }
         .hidden { display: none; }
+        .visitor-counter { font-size: 0.9em; color: #555; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         #timer { font-size: 3em; color: #ff0000; margin: 10px 0; font-weight: bold; }
         input { padding: 8px; font-size: 1.2em; width: 80%; background: #000; color: #0f0; border: 1px solid #0f0; }
         button { padding: 10px 20px; font-size: 1.2em; cursor: pointer; margin-top: 10px; background: #0f0; color: #000; border: none; }
-        footer { margin-top: 100px; color: #555; font-size: 0.8em; }
+        footer { margin-top: 50px; color: #555; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="screen">
+        <div class="visitor-counter">Current Visitors: <span id="count">0</span></div>
         <h2>SYSTEM ACCESS</h2>
         <input type="password" id="pass-input" placeholder="Password">
         <br>
@@ -42,16 +44,19 @@
     </footer>
 
     <script>
+        // 来場者数のシミュレーション
+        document.getElementById('count').innerText = Math.floor(Math.random() * 5000) + 120;
+
         let timerId;
         let timeLeft = 30.0;
         let correctAnswer;
 
-        // 難しい問題リスト (q=問題文, a=答え)
+        // 分数や積分を含む難問リスト
         const problems = [
-            { q: "√144 + (10 / 2)", a: 17 },
-            { q: "∫(0 to 2) 3x^2 dx", a: 8 },
-            { q: "(√81 / 3) + 7", a: 10 },
-            { q: "100 / 4 + √16", a: 29 }
+            { q: "(1/2) * 50 + 10", a: 35 },
+            { q: "∫(0 to 2) 2x dx", a: 4 },
+            { q: "(1/4) * 100 - √9", a: 22 },
+            { q: "√169 + (1/3) * 30", a: 23 }
         ];
 
         function startChallenge() {
