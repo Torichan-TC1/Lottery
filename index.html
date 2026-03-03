@@ -2,19 +2,61 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ネット宝くじシミュレーター</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { margin: 0; background-color: #8ea3c4; font-family: sans-serif; display: flex; justify-content: center; height: 100vh; }
+        #chat-window { width: 100%; max-width: 400px; background: #8ea3c4; display: flex; flex-direction: column; height: 100%; }
+        #messages { flex: 1; overflow-y: scroll; padding: 20px; }
+        
+        /* メッセージ配置 */
+        .message { display: flex; margin-bottom: 15px; }
+        .message.me { justify-content: flex-end; }
+        
+        /* フキダシ */
+        .bubble { padding: 10px 15px; border-radius: 18px; position: relative; max-width: 70%; word-wrap: break-word; }
+        .boss { background: white; color: black; border-top-left-radius: 2px; }
+        .me { background: #95ec69; color: black; border-top-right-radius: 2px; }
+        
+        /* 入力欄 */
+        #footer { background: white; padding: 10px; display: flex; }
+        input { flex: 1; border: none; padding: 10px; outline: none; }
+        button { background: #95ec69; border: none; border-radius: 5px; padding: 0 15px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>宝くじシミュレーター</h1>
-        <div id="result">ボタンを押して抽選開始！</div>
-        <button id="drawBtn">宝くじを引く</button>
-        <div class="stats">
-            <p>挑戦回数: <span id="tries">0</span></p>
-            <p>当選回数: <span id="wins">0</span></p>
+    <div id="chat-window">
+        <div id="messages"></div>
+        <div id="footer">
+            <input type="text" id="input" placeholder="メッセージを入力">
+            <button onclick="send()">送信</button>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+
+        function addMessage(text, isMe) {
+            const div = document.createElement('div');
+            div.className = isMe ? 'message me' : 'message';
+            div.innerHTML = `<div class="bubble ${isMe ? 'me' : 'boss'}">${text}</div>`;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function send() {
+            if (!input.value) return;
+            addMessage(input.value, true);
+            const userText = input.value;
+            input.value = '';
+
+            // AI上司の返信
+            setTimeout(() => {
+                let reply = "…で、結論は？";
+                if (userText.includes("進捗")) reply = "進捗？それが今の君の精一杯？";
+                if (userText.includes("お疲れ")) reply = "お疲れ様。で、例の資料は？";
+                addMessage(reply, false);
+            }, 1000);
+        }
+    </script>
 </body>
 </html>
