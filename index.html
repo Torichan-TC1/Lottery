@@ -49,26 +49,28 @@
         let timeLeft = 30.0;
         let correctAnswer;
 
-        function generateComplexProblem() {
-            const sqVal = [4, 9, 16, 25, 36, 49, 64, 81, 100];
-            const A = sqVal[Math.floor(Math.random() * sqVal.length)];
-            const B = Math.floor(Math.random() * 10) + 1;
-            const C = Math.floor(Math.random() * 5) + 1;
-            const D = Math.floor(Math.random() * 20) + 1;
+function generateComplexProblem() {
+    const sqVal = [4, 9, 16, 25, 36, 49, 64, 81];
+    const A = sqVal[Math.floor(Math.random() * sqVal.length)];
+    const B = Math.floor(Math.random() * 8) + 2;
+    const C = Math.floor(Math.random() * 4) + 2; // 分母
+    const D = [30, 90][Math.floor(Math.random() * 2)]; // 30度か90度
+    const E = Math.floor(Math.random() * 5) + 1; // sinの係数
 
-            // 数式（$LaTeX$ 記法を意識したテキスト表示）
-            const formula = `\\frac{\\sqrt{${A}} \\times ${B}}{${C}} + \\sin(90^\\circ) \\times ${D}`;
-            
-            // 表示用の数式（Webで見やすい形に）
-            const displayFormula = `(√${A} × ${B}) / ${C} + sin(90°) × ${D}`;
-            
-            // 問題文のバリエーション
-            const prompts = [
-                "以下の式の値を計算し、小数点以下を四捨五入して整数で答えよ。",
-                "与えられた数式の解を求め、整数で解答せよ。",
-                "次の方程式の演算結果を算出せよ。",
-                "以下の数式を簡略化し、結果のみを整数で入力せよ。"
-            ];
+    // 表示用の式（視覚的に複雑にする）
+    // 数式: ((√A * B) / C) + (sin(D°) * E * 2)
+    const displayFormula = `( (√${A} × ${B}) ÷ ${C} ) + ( sin(${D}°) × ${E * 2} )`;
+    
+    const statement = "以下の数式を計算せよ（小数点以下は四捨五入）。";
+
+    // 計算ロジック
+    // Math.sinはラジアンなので、度数法に変換 (D * Math.PI / 180)
+    const sinVal = Math.sin(D * Math.PI / 180);
+    const fracPart = (Math.sqrt(A) * B) / C;
+    const result = fracPart + (sinVal * (E * 2));
+    
+    return { statement, formula: displayFormula, a: Math.round(result) };
+}
             const statement = prompts[Math.floor(Math.random() * prompts.length)];
 
             const result = (Math.sqrt(A) * B) / C + (1 * D);
