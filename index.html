@@ -2,66 +2,87 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>スパルタ認証システム</title>
+    <title>スパルタ数学認証</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        #quiz-box { border: 2px solid #333; padding: 20px; width: 300px; margin: auto; }
-        #timer { font-size: 2em; color: red; font-weight: bold; }
+        body { font-family: 'Courier New', Courier, monospace; text-align: center; padding: 50px; background: #1a1a1a; color: #eee; }
+        .screen { border: 2px solid #555; padding: 30px; width: 400px; margin: auto; border-radius: 10px; background: #222; }
         .hidden { display: none; }
+        #timer { font-size: 3em; color: #ff4444; font-weight: bold; margin: 20px 0; }
+        input { padding: 10px; font-size: 1.2em; width: 80%; }
+        button { padding: 10px 20px; font-size: 1.2em; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <h2>GitHub ログイン</h2>
-        <input type="password" placeholder="パスワードを入力">
-        <button onclick="startChallenge()">ログイン</button>
+    <div id="login-screen" class="screen">
+        <h2>System Login</h2>
+        <input type="password" id="pass-input" placeholder="パスワードを入力">
+        <br>
+        <button onclick="startChallenge()">認証へ進む</button>
     </div>
 
-    <div id="challenge-screen" class="hidden">
-        <h2>認証：ロボットではないことを証明せよ</h2>
-        <p>以下の計算を30秒以内に解け：</p>
-        <div id="equation" style="font-size: 1.5em; margin: 10px;"></div>
-        <div id="timer">30</div>
+    <div id="challenge-screen" class="screen hidden">
+        <h2>Identity Verification</h2>
+        <p>以下の数式を解け (小数点以下は切り捨て)</p>
+        <div id="equation" style="font-size: 1.8em; margin: 20px;"></div>
+        <div id="timer">30.0</div>
         <input type="number" id="answer" placeholder="答えを入力">
-        <button onclick="checkAnswer()">送信</button>
+        <button onclick="checkAnswer()">回答送信</button>
+    </div>
+
+    <div id="success-screen" class="screen hidden">
+        <h1 style="color: #44ff44;">ACCESS GRANTED</h1>
+        <p>おめでとう！認証に成功しました。</p>
+        <button onclick="location.reload()">再ログイン</button>
     </div>
 
     <script>
-        let countdown;
+        let timerId;
+        let timeLeft = 30.0;
         let correctAnswer;
-        let timeLeft = 30;
+
+        // 数学問題のリスト (ルートや積分)
+        const problems = [
+            { q: "√144 + √81", a: 21 },
+            { q: "∫(0 to 2) 3x^2 dx", a: 8 },
+            { q: "√(25) * 4", a: 20 }
+        ];
 
         function startChallenge() {
+            // パスワード確認（簡易的なもの）
+            if(document.getElementById('pass-input').value !== "admin") {
+                alert("パスワードが違います");
+                return;
+            }
+
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('challenge-screen').classList.remove('hidden');
-            
-            // 超難しい（？）計算式を生成
-            const a = Math.floor(Math.random() * 90) + 10;
-            const b = Math.floor(Math.random() * 90) + 10;
-            const c = Math.floor(Math.random() * 10) + 1;
-            correctAnswer = (a * b) + c;
-            document.getElementById('equation').innerText = `${a} × ${b} + ${c} = ?`;
 
-            // タイマー開始
-            countdown = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').innerText = timeLeft;
+            // 問題選択
+            const prob = problems[Math.floor(Math.random() * problems.length)];
+            document.getElementById('equation').innerText = prob.q;
+            correctAnswer = prob.a;
+
+            // 1/10秒単位のタイマー開始
+            timerId = setInterval(() => {
+                timeLeft -= 0.1;
+                document.getElementById('timer').innerText = timeLeft.toFixed(1);
                 if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    alert("時間切れ！認証されませんでした。");
-                    location.reload(); // ページをリロードして最初から
+                    clearInterval(timerId);
+                    alert("Time Over! 認証失敗");
+                    location.reload();
                 }
-            }, 1000);
+            }, 100);
         }
 
         function checkAnswer() {
             const userAnswer = document.getElementById('answer').value;
-            clearInterval(countdown);
             if (parseInt(userAnswer) === correctAnswer) {
-                alert("おめでとう！認証成功です。");
+                clearInterval(timerId);
+                document.getElementById('challenge-screen').classList.add('hidden');
+                document.getElementById('success-screen').classList.remove('hidden');
             } else {
-                alert("不正解です。ログインに戻ります。");
+                alert("不正解！");
                 location.reload();
             }
         }
