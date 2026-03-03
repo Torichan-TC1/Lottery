@@ -1,98 +1,60 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>完全版：理不尽AI上司</title>
-    <style>
-        body { margin: 0; background-color: #8ea3c4; font-family: sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        #chat-window { width: 100%; max-width: 400px; background: #8ea3c4; display: flex; flex-direction: column; height: 100vh; }
-        #messages { flex: 1; overflow-y: auto; padding: 20px; }
-        .message { display: flex; margin-bottom: 15px; }
-        .message.me { justify-content: flex-end; }
-        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 70%; word-wrap: break-word; position: relative; }
-        .boss { background: white; color: black; border-top-left-radius: 2px; }
-        .me { background: #95ec69; color: black; border-top-right-radius: 2px; }
-        #footer { background: white; padding: 10px; display: flex; }
-        input { flex: 1; border: none; padding: 10px; outline: none; }
-        button { background: #95ec69; border: none; border-radius: 5px; padding: 0 15px; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div id="chat-window">
-        <div id="messages"></div>
-        <div id="footer">
-            <input type="text" id="input" placeholder="報告を入力...">
-            <button onclick="send()">送信</button>
-        </div>
-    </div>
+<div id="authGate" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); color:white; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
+    <h2>社員認証：人間であることを証明せよ</h2>
+    <p>以下の式を解け：</p>
+    <div id="mathProblem" style="font-size: 2.5em; margin: 20px; color: gold;"></div>
+    <input type="number" id="mathAnswer" placeholder="答えを入力...">
+    <div id="timerDisplay" style="margin: 20px; font-size: 2em; color: red;">30</div>
+    <button onclick="checkMath()">送信</button>
+</div>
 
-    <script>
-        // 返信パターンの大幅拡充
-        const responses = {
-            report: {
-                normal: ["了解。で、次のタスクは？", "まあ、最低限はクリアだね。次はもっと早く。", "ふーん。で、ここ直せる？", "把握した。あと資料5枚追加で。報告は簡潔に。", "進捗？それが君の精一杯？"],
-                busy: ["報告はメールでいいよ。今忙しい。", "あ、今立て込んでるから後で。", "…結論だけ言える？", "メールで送っておいて。通知はオフにしとく。", "今は会議中なんだ。"],
-                angry: ["やっと終わったの？遅すぎるよ。", "こんなものか。期待してたんだけど。", "質が低いね。やり直し。", "それ、本当に僕が指示したやつ？センスがないな。"]
-            },
-            excuse: {
-                normal: ["理由はいいから、どうするか言って。", "それが君の限界？", "言い訳を探す暇があるなら手を動かして。", "で、いつまでに挽回するの？計画立てて。", "責任転嫁してる？"],
-                busy: ["忙しいんだよね今。またにして。", "それは僕の仕事じゃないよ。", "言い訳は聞いてない。自分でなんとかして。", "優先度下げて。"],
-                angry: ["だから何？", "言い訳を聞くために雇ったんじゃない。", "…もう帰っていいよ。顔も見たくない。", "時間の無駄だ。次言ったら評価下げるぞ。"]
-            },
-            question: {
-                normal: ["自分で考えてみて。", "ググれば一発じゃない？", "それ、聞く前に調べた？一次情報は大事だよ。", "もう少し工夫しようか。君ならできるはずだ。", "質問の質が低いね。"],
-                busy: ["今、会議中なんだ。後にしてくれる？", "今は手が離せない。後で。", "…メールで詳細送っといて。読まないかもしれないけど。", "今はそれどころじゃない。"],
-                angry: ["そんなことも分からないの？", "やる気ある？", "少しは自分で工夫しなよ。甘えすぎだよ。", "基本だろう？それ。社会人何年目？"]
+<script>
+    let correctAnswer;
+    let timerInterval;
+
+    function startAuth() {
+        document.getElementById('authGate').style.display = 'flex';
+        const type = Math.floor(Math.random() * 3); // 3パターンからランダム
+
+        if (type === 0) { // 積分パターン: \int_0^a x dx = a^2 / 2
+            const a = Math.floor(Math.random() * 8) + 2;
+            correctAnswer = (a * a) / 2;
+            document.getElementById('mathProblem').innerText = `∫[0, ${a}] x dx = ?`;
+        } else if (type === 1) { // ルート・分数パターン: \frac{\sqrt{x}}{a} = b
+            const a = Math.floor(Math.random() * 5) + 2;
+            const b = Math.floor(Math.random() * 5) + 2;
+            correctAnswer = (a * b) ** 2;
+            document.getElementById('mathProblem').innerText = `√x / ${a} = ${b}`;
+        } else { // 代数パターン: a * x + b = c
+            const a = Math.floor(Math.random() * 10) + 1;
+            const b = Math.floor(Math.random() * 20) + 1;
+            const x = Math.floor(Math.random() * 10) + 1;
+            correctAnswer = x;
+            document.getElementById('mathProblem').innerText = `${a}x + ${b} = ${a*x + b}`;
+        }
+
+        let timeLeft = 30;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timerDisplay').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert("認証失敗。君のような未熟者にこの部署は早い。");
+                location.reload(); 
             }
-        };
+        }, 1000);
+    }
 
-        let currentMood = "normal";
-        let lastReply = ""; // 前回の返信を保存
-
-        function getReply(text) {
-            if (Math.random() < 0.3) currentMood = ["normal", "busy", "angry"][Math.floor(Math.random() * 3)];
-            
-            let intent = "report";
-            if (text.includes("すいません") || text.includes("無理") || text.includes("ごめんなさい")) intent = "excuse";
-            else if (text.includes("どう") || text.includes("教えて") || text.includes("？")) intent = "question";
-
-            const pool = responses[intent][currentMood];
-            
-            // 重複回避ロジック
-            let reply;
-            do {
-                reply = pool[Math.floor(Math.random() * pool.length)];
-            } while (reply === lastReply && pool.length > 1);
-            
-            lastReply = reply;
-            return reply;
+    function checkMath() {
+        const userAnswer = document.getElementById('mathAnswer').value;
+        if (parseInt(userAnswer) === correctAnswer) {
+            clearInterval(timerInterval);
+            document.getElementById('authGate').style.display = 'none';
+            alert("……合格。さあ、仕事を始めろ。");
+        } else {
+            alert("計算ミス？そんなことで我が社が務まると思っているのか？");
         }
+    }
 
-        function addMessage(text, isMe) {
-            const div = document.createElement('div');
-            div.className = isMe ? 'message me' : 'message';
-            div.innerHTML = `<div class="bubble ${isMe ? 'me' : 'boss'}">${text}</div>`;
-            document.getElementById('messages').appendChild(div);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-        }
-
-        function send() {
-            const input = document.getElementById('input');
-            if (!input.value.trim()) return;
-            addMessage(input.value, true);
-            const userText = input.value;
-            input.value = '';
-
-            setTimeout(() => {
-                const reply = getReply(userText);
-                addMessage(reply, false);
-            }, 1000 + Math.random() * 1000);
-        }
-
-        // Enterキー対応（keydownイベントを使用）
-        document.getElementById('input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') send();
-        });
-    </script>
-</body>
-</html>
+    // 最初に呼び出す
+    window.onload = startAuth;
+</script>
