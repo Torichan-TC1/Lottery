@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>理不尽AI上司LINE（完全版）</title>
+    <title>完全版：理不尽AI上司</title>
     <style>
         body { margin: 0; background-color: #8ea3c4; font-family: sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         #chat-window { width: 100%; max-width: 400px; background: #8ea3c4; display: flex; flex-direction: column; height: 100vh; }
@@ -21,49 +21,53 @@
     <div id="chat-window">
         <div id="messages"></div>
         <div id="footer">
-            <input type="text" id="input" placeholder="メッセージを入力...">
+            <input type="text" id="input" placeholder="報告を入力...">
             <button onclick="send()">送信</button>
         </div>
     </div>
 
     <script>
-        // --- 強化された返信エンジン ---
+        // 返信パターンの大幅拡充
         const responses = {
             report: {
-                normal: ["了解。で、次のタスクは？", "まあ、及第点だね。次はもっと早く。", "ふーん。で、ここ直せる？", "把握した。あと資料5枚追加で。"],
-                busy: ["報告は後でいいよ。今忙しい。", "あ、今立て込んでるから後で。", "…結論だけ言える？", "メールで送っておいて。"],
-                angry: ["やっと終わったの？遅すぎるよ。", "こんなものか。期待してたんだけど。", "質が低いね。やり直し。", "それ、本当に僕が指示したやつ？"]
+                normal: ["了解。で、次のタスクは？", "まあ、最低限はクリアだね。次はもっと早く。", "ふーん。で、ここ直せる？", "把握した。あと資料5枚追加で。報告は簡潔に。", "進捗？それが君の精一杯？"],
+                busy: ["報告はメールでいいよ。今忙しい。", "あ、今立て込んでるから後で。", "…結論だけ言える？", "メールで送っておいて。通知はオフにしとく。", "今は会議中なんだ。"],
+                angry: ["やっと終わったの？遅すぎるよ。", "こんなものか。期待してたんだけど。", "質が低いね。やり直し。", "それ、本当に僕が指示したやつ？センスがないな。"]
             },
             excuse: {
-                normal: ["理由はいいから、どうするか言って。", "それが君の限界？", "言い訳を探す暇があるなら手を動かして。", "で、いつまでに挽回するの？"],
-                busy: ["忙しいんだよね今。またにして。", "それは僕の仕事じゃないよ。", "言い訳は聞いてないよ。", "後回しでいいや。"],
-                angry: ["だから何？", "言い訳を聞くために雇ったんじゃない。", "…もう帰っていいよ。", "時間の無駄だ。"]
+                normal: ["理由はいいから、どうするか言って。", "それが君の限界？", "言い訳を探す暇があるなら手を動かして。", "で、いつまでに挽回するの？計画立てて。", "責任転嫁してる？"],
+                busy: ["忙しいんだよね今。またにして。", "それは僕の仕事じゃないよ。", "言い訳は聞いてない。自分でなんとかして。", "優先度下げて。"],
+                angry: ["だから何？", "言い訳を聞くために雇ったんじゃない。", "…もう帰っていいよ。顔も見たくない。", "時間の無駄だ。次言ったら評価下げるぞ。"]
             },
             question: {
-                normal: ["自分で考えてみて。", "ググれば一発じゃない？", "それ、聞く前に調べた？", "もう少し工夫しようか。"],
-                busy: ["今、会議中なんだけど。", "後にしてくれる？", "…メールで詳細送っといて。", "今は手が離せない。"],
-                angry: ["そんなことも分からないの？", "やる気ある？", "少しは自分で工夫しなよ。", "基本だろう？それ。"]
+                normal: ["自分で考えてみて。", "ググれば一発じゃない？", "それ、聞く前に調べた？一次情報は大事だよ。", "もう少し工夫しようか。君ならできるはずだ。", "質問の質が低いね。"],
+                busy: ["今、会議中なんだ。後にしてくれる？", "今は手が離せない。後で。", "…メールで詳細送っといて。読まないかもしれないけど。", "今はそれどころじゃない。"],
+                angry: ["そんなことも分からないの？", "やる気ある？", "少しは自分で工夫しなよ。甘えすぎだよ。", "基本だろう？それ。社会人何年目？"]
             }
         };
 
         let currentMood = "normal";
+        let lastReply = ""; // 前回の返信を保存
 
         function getReply(text) {
-            // 気分をランダム変更（30%の確率で変動）
-            const moods = ["normal", "busy", "angry"];
-            if (Math.random() < 0.3) currentMood = moods[Math.floor(Math.random() * moods.length)];
+            if (Math.random() < 0.3) currentMood = ["normal", "busy", "angry"][Math.floor(Math.random() * 3)];
             
-            // 意図判定（キーワード検索）
             let intent = "report";
-            if (text.includes("すみません") || text.includes("無理") || text.includes("ごめんなさい")) intent = "excuse";
-            else if (text.includes("どう") || text.includes("教えて") || text.includes("？") || text.includes("教えてください")) intent = "question";
+            if (text.includes("すいません") || text.includes("無理") || text.includes("ごめんなさい")) intent = "excuse";
+            else if (text.includes("どう") || text.includes("教えて") || text.includes("？")) intent = "question";
 
-            // 返信パターンからランダム抽出
             const pool = responses[intent][currentMood];
-            return pool[Math.floor(Math.random() * pool.length)];
+            
+            // 重複回避ロジック
+            let reply;
+            do {
+                reply = pool[Math.floor(Math.random() * pool.length)];
+            } while (reply === lastReply && pool.length > 1);
+            
+            lastReply = reply;
+            return reply;
         }
 
-        // --- UI操作 ---
         function addMessage(text, isMe) {
             const div = document.createElement('div');
             div.className = isMe ? 'message me' : 'message';
@@ -74,21 +78,19 @@
 
         function send() {
             const input = document.getElementById('input');
-            if (!input.value.trim()) return; // 空文字チェック
+            if (!input.value.trim()) return;
             addMessage(input.value, true);
             const userText = input.value;
             input.value = '';
 
-            // AIの思考遅延（1秒〜2秒でランダムに変化させる）
-            const delay = 1000 + Math.random() * 1000;
             setTimeout(() => {
                 const reply = getReply(userText);
                 addMessage(reply, false);
-            }, delay);
+            }, 1000 + Math.random() * 1000);
         }
 
-        // --- Enterキー対応 ---
-        document.getElementById('input').addEventListener('keypress', (e) => {
+        // Enterキー対応（keydownイベントを使用）
+        document.getElementById('input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') send();
         });
     </script>
